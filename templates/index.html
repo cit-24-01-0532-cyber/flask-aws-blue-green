@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogiTrack - Blue Delivery Environment</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between">
+
+    <!-- Navbar -->
+    <nav class="bg-slate-900/80 backdrop-blur-md border-b border-blue-500/20 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-500/30">
+                <i class="fas fa-truck-fast text-xl"></i>
+            </div>
+            <div>
+                <span class="font-black text-xl tracking-wider text-blue-400 block">LOGITRACK</span>
+                <span class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">{{ version }}</span>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="refreshSystem()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2 rounded-lg border border-slate-700 transition cursor-pointer">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+            <span class="bg-blue-500/10 text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-full border border-blue-500/20 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span> Blue Node Active
+            </span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 md:px-6 py-8 flex-grow">
+        
+        <!-- Welcome & Heading -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold text-white tracking-tight">Delivery Operations Control</h1>
+            <p class="text-slate-400 text-sm">Real-time monitoring and dispatch management system.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <!-- Card 1 -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Total Deliveries</p>
+                    <p class="text-2xl font-bold text-white mt-1">{{ stats.total_deliveries }}</p>
+                </div>
+                <div class="bg-blue-500/10 text-blue-400 p-3 rounded-lg"><i class="fas fa-box text-xl"></i></div>
+            </div>
+            <!-- Card 2 -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Pending Dispatch</p>
+                    <p class="text-2xl font-bold text-amber-400 mt-1">{{ stats.pending_deliveries }}</p>
+                </div>
+                <div class="bg-amber-500/10 text-amber-400 p-3 rounded-lg"><i class="fas fa-clock text-xl"></i></div>
+            </div>
+            <!-- Card 3 -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Active Drivers</p>
+                    <p class="text-2xl font-bold text-cyan-400 mt-1">{{ stats.active_drivers }}</p>
+                </div>
+                <div class="bg-cyan-500/10 text-cyan-400 p-3 rounded-lg"><i class="fas fa-user-ninja text-xl"></i></div>
+            </div>
+            <!-- Card 4 -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-5 flex items-center justify-between shadow-lg">
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-400">Today's Earnings</p>
+                    <p class="text-2xl font-bold text-emerald-400 mt-1">{{ stats.revenue }}</p>
+                </div>
+                <div class="bg-emerald-500/10 text-emerald-400 p-3 rounded-lg"><i class="fas fa-wallet text-xl"></i></div>
+            </div>
+        </div>
+
+        <!-- Orders Table / Advanced Section -->
+        <div class="bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden shadow-2xl backdrop-blur-sm">
+            <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-slate-200"><i class="fas fa-list text-blue-400 mr-2"></i> Recent Live Shipments</h2>
+                <button onclick="addNewOrder()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-lg shadow transition cursor-pointer">
+                    <i class="fas fa-plus mr-1"></i> Create Order
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                            <th class="px-6 py-4">Tracking ID</th>
+                            <th class="px-6 py-4">Customer</th>
+                            <th class="px-6 py-4">Destination</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-sm" id="order-table-body">
+                        {% for order in orders %}
+                        <tr class="hover:bg-slate-800/30 transition">
+                            <td class="px-6 py-4 font-mono font-bold text-blue-400">{{ order.id }}</td>
+                            <td class="px-6 py-4 font-medium text-slate-200">{{ order.customer }}</td>
+                            <td class="px-6 py-4 text-slate-400"><i class="fas fa-location-dot text-xs mr-1 text-slate-500"></i> {{ order.location }}</td>
+                            <td class="px-6 py-4">
+                                {% if order.status_color == 'blue' %}
+                                <span class="bg-blue-500/10 text-blue-400 text-xs px-2.5 py-1 rounded-md border border-blue-500/20 font-medium">In Transit</span>
+                                {% elif order.status_color == 'amber' %}
+                                <span class="bg-amber-500/10 text-amber-400 text-xs px-2.5 py-1 rounded-md border border-amber-500/20 font-medium">Pending</span>
+                                {% else %}
+                                <span class="bg-emerald-500/10 text-emerald-400 text-xs px-2.5 py-1 rounded-md border border-emerald-500/20 font-medium">Delivered</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button onclick="trackOrder('{{ order.id }}')" class="text-slate-400 hover:text-blue-400 transition text-xs font-semibold bg-slate-800 px-3 py-1.5 rounded border border-slate-700 cursor-pointer">
+                                    Track
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-6 border-t border-slate-900 text-xs text-slate-500 bg-slate-950">
+        <p>&copy; 2026 LogiTrack Cluster | Microservice Environment: <span class="text-blue-400 font-mono">Blue-v1.0</span></p>
+    </footer>
+
+    <!-- Interactive JavaScript -->
+    <script>
+        function refreshSystem() {
+            location.reload();
+        }
+
+        function trackOrder(orderId) {
+            alert(`📍 Fetching live GPS coordinates for ${orderId}... Connection to Blue Cluster secure.`);
+        }
+
+        function addNewOrder() {
+            alert("✨ Redirection to 'Create Order' Form Component (Mocked for testing).");
+        }
+    </script>
+</body>
+</html>
